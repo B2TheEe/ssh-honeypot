@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/gliderlabs/ssh"
@@ -117,7 +118,21 @@ func runInteractive(s ssh.Session) {
 	}
 }
 
+func setupLogging() {
+	// Log naar zowel terminal als bestand
+	logFile, err := os.OpenFile("honeypot.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal("Kan logbestand niet openen:", err)
+	}
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+	log.SetOutput(multiWriter)
+	log.SetFlags(log.Ldate | log.Ltime)
+}
+
 func main() {
+	// Initialiseer logging naar terminal én honeypot.log
+	setupLogging()
+
 	server := &ssh.Server{
 		Addr: ":2222",
 		PasswordHandler: func(ctx ssh.Context, password string) bool {
@@ -154,6 +169,7 @@ func main() {
 			runInteractive(s)
 		},
 	}
+
 	log.Println("SSH Honeypot luistert op :2222...")
 	log.Fatal(server.ListenAndServe())
 }
