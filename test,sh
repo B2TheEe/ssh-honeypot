@@ -1,0 +1,10 @@
+#!/bin/bash
+COMMANDS=("id" "whoami" "uname -a" "ps aux" "history" "cat /etc/passwd")
+
+for cmd in "${COMMANDS[@]}"; do
+  echo "=== Test: $cmd ==="
+  ssh -p 2222 \
+    -o StrictHostKeyChecking=no \
+    testuser@localhost "$cmd"
+  echo ""
+done
